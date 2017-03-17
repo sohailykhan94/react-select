@@ -154,10 +154,12 @@ var Contributors = _react2['default'].createClass({
 	getInitialState: function getInitialState() {
 		return {
 			multi: true,
-			value: [CONTRIBUTORS[0]]
+			value: [CONTRIBUTORS[0]],
+			reloadOptions: false
 		};
 	},
 	onChange: function onChange(value) {
+		console.log('On change triggered');
 		this.setState({
 			value: value
 		});
@@ -190,6 +192,15 @@ var Contributors = _react2['default'].createClass({
 	gotoContributor: function gotoContributor(value, event) {
 		window.open('https://github.com/' + value.github);
 	},
+	setNull: function setNull() {
+		this.setState({
+			value: 'Please select...',
+			reloadOptions: true
+		});
+	},
+	getReloadStatus: function getReloadStatus() {
+		return true;
+	},
 	render: function render() {
 		return _react2['default'].createElement(
 			'div',
@@ -199,7 +210,7 @@ var Contributors = _react2['default'].createClass({
 				{ className: 'section-heading' },
 				this.props.label
 			),
-			_react2['default'].createElement(_reactSelect2['default'].Async, { multi: this.state.multi, value: this.state.value, onChange: this.onChange, onValueClick: this.gotoContributor, valueKey: 'github', labelKey: 'name', loadOptions: this.getContributors }),
+			_react2['default'].createElement(_reactSelect2['default'].Async, { multi: this.state.multi, value: this.state.value, onChange: this.onChange, cache: false, onValueClick: this.gotoContributor, valueKey: 'github', labelKey: 'name', loadOptions: this.getContributors, shouldReloadOptions: this.getReloadStatus }),
 			_react2['default'].createElement(
 				'div',
 				{ className: 'checkbox-list' },
@@ -221,6 +232,16 @@ var Contributors = _react2['default'].createClass({
 						'span',
 						{ className: 'checkbox-label' },
 						'Single Value'
+					)
+				),
+				_react2['default'].createElement(
+					'label',
+					{ className: 'checkbox' },
+					_react2['default'].createElement('input', { type: 'radio', className: 'checkbox-control', checked: this.state.reloadOptions, onChange: this.setNull }),
+					_react2['default'].createElement(
+						'span',
+						{ className: 'checkbox-label' },
+						'Reset'
 					)
 				)
 			),
@@ -1961,9 +1982,9 @@ function parserForArrayFormat(opts) {
 	switch (opts.arrayFormat) {
 		case 'index':
 			return function (key, value, accumulator) {
-				result = /\[(\d*)]$/.exec(key);
+				result = /\[(\d*)\]$/.exec(key);
 
-				key = key.replace(/\[\d*]$/, '');
+				key = key.replace(/\[\d*\]$/, '');
 
 				if (!result) {
 					accumulator[key] = value;
@@ -1979,9 +2000,9 @@ function parserForArrayFormat(opts) {
 
 		case 'bracket':
 			return function (key, value, accumulator) {
-				result = /(\[])$/.exec(key);
+				result = /(\[\])$/.exec(key);
 
-				key = key.replace(/\[]$/, '');
+				key = key.replace(/\[\]$/, '');
 
 				if (!result || accumulator[key] === undefined) {
 					accumulator[key] = value;
@@ -9526,7 +9547,10 @@ module.exports = function (str) {
       headers.forEach(function(value, name) {
         this.append(name, value)
       }, this)
-
+    } else if (Array.isArray(headers)) {
+      headers.forEach(function(header) {
+        this.append(header[0], header[1])
+      }, this)
     } else if (headers) {
       Object.getOwnPropertyNames(headers).forEach(function(name) {
         this.append(name, headers[name])

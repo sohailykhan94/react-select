@@ -41,6 +41,7 @@ var propTypes = {
 	loadingPlaceholder: _react2['default'].PropTypes.oneOfType([// replaces the placeholder while options are loading
 	_react2['default'].PropTypes.string, _react2['default'].PropTypes.node]),
 	loadOptions: _react2['default'].PropTypes.func.isRequired, // callback to load options asynchronously; (inputValue: string, callback: Function): ?Promise
+	shouldReloadOptions: _react2['default'].PropTypes.func, // function to check if we should reload the loptions; (): bool
 	options: _react.PropTypes.array.isRequired, // array of options
 	placeholder: _react2['default'].PropTypes.oneOfType([// field placeholder, displayed when there's no value (shared with Select)
 	_react2['default'].PropTypes.string, _react2['default'].PropTypes.node]),
@@ -91,6 +92,13 @@ var Async = (function (_Component) {
 
 			if (autoload) {
 				this.loadOptions('');
+			}
+		}
+	}, {
+		key: 'componentWillReceiveProps',
+		value: function componentWillReceiveProps(props) {
+			if (props.shouldReloadOptions && props.shouldReloadOptions()) {
+				this.loadOptions();
 			}
 		}
 	}, {
@@ -187,6 +195,16 @@ var Async = (function (_Component) {
 			return this.loadOptions(inputValue);
 		}
 	}, {
+		key: 'onOpen',
+		value: function onOpen() {
+			if (this.props.shouldReloadOptions && this.props.shouldReloadOptions()) {
+				this.loadOptions();
+			}
+			if (this.props.onOpen) {
+				this.props.onOpen();
+			}
+		}
+	}, {
 		key: 'inputValue',
 		value: function inputValue() {
 			if (this.select) {
@@ -214,11 +232,6 @@ var Async = (function (_Component) {
 			return searchPromptText;
 		}
 	}, {
-		key: 'focus',
-		value: function focus() {
-			this.select.focus();
-		}
-	}, {
 		key: 'render',
 		value: function render() {
 			var _this3 = this;
@@ -239,7 +252,7 @@ var Async = (function (_Component) {
 					return _this3.select = _ref;
 				},
 				onChange: function onChange(newValues) {
-					if (_this3.props.multi && _this3.props.value && newValues.length > _this3.props.value.length) {
+					if (_this3.props.value && newValues.length > _this3.props.value.length) {
 						_this3.clearOptions();
 					}
 					_this3.props.onChange(newValues);
@@ -248,7 +261,8 @@ var Async = (function (_Component) {
 
 			return children(_extends({}, this.props, props, {
 				isLoading: isLoading,
-				onInputChange: this._onInputChange
+				onInputChange: this._onInputChange,
+				onOpen: this.onOpen.bind(this)
 			}));
 		}
 	}]);
@@ -1173,7 +1187,7 @@ var Select = _react2['default'].createClass({
 			});
 		} else {
 			// otherwise, focus the input and open the menu
-			this._openAfterFocus = true;
+			this._openAfterFocus = this.props.openOnFocus;
 			this.focus();
 		}
 	},

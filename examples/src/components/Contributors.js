@@ -14,9 +14,11 @@ const Contributors = React.createClass({
 		return {
 			multi: true,
 			value: [CONTRIBUTORS[0]],
+			reloadOptions: false,
 		};
 	},
 	onChange (value) {
+		console.log('On change triggered');
 		this.setState({
 			value: value,
 		});
@@ -49,11 +51,20 @@ const Contributors = React.createClass({
 	gotoContributor (value, event) {
 		window.open('https://github.com/' + value.github);
 	},
+	setNull () {
+		this.setState({
+			value: 'Please select...',
+			reloadOptions: true,
+		});
+	},
+	getReloadStatus () {
+		return true;
+	},
 	render () {
 		return (
 			<div className="section">
 				<h3 className="section-heading">{this.props.label}</h3>
-				<Select.Async multi={this.state.multi} value={this.state.value} onChange={this.onChange} onValueClick={this.gotoContributor} valueKey="github" labelKey="name" loadOptions={this.getContributors} />
+				<Select.Async multi={this.state.multi} value={this.state.value} onChange={this.onChange} cache={false} onValueClick={this.gotoContributor} valueKey="github" labelKey="name" loadOptions={this.getContributors} shouldReloadOptions={this.getReloadStatus} />
 				<div className="checkbox-list">
 					<label className="checkbox">
 						<input type="radio" className="checkbox-control" checked={this.state.multi} onChange={this.switchToMulti}/>
@@ -62,6 +73,10 @@ const Contributors = React.createClass({
 					<label className="checkbox">
 						<input type="radio" className="checkbox-control" checked={!this.state.multi} onChange={this.switchToSingle}/>
 						<span className="checkbox-label">Single Value</span>
+					</label>
+					<label className="checkbox">
+						<input type="radio" className="checkbox-control" checked={this.state.reloadOptions} onChange={this.setNull}/>
+						<span className="checkbox-label">Reset</span>
 					</label>
 				</div>
 				<div className="hint">This example implements custom label and value properties, async options and opens the github profiles in a new window when values are clicked</div>
